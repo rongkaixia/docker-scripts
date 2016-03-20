@@ -25,9 +25,9 @@ function build_spark_worker_image() {
 function start_master() {
     echo "starting master container"
     if [ "$DEBUG" -gt 0 ]; then
-        echo sudo docker run -d --dns $NAMESERVER_IP -h master${DOMAINNAME} $VOLUME_MAP $1:$2
+        echo sudo docker run -d --dns $NAMESERVER_IP -p 8080:8080 -p 50070:50070 -h master${DOMAINNAME} $VOLUME_MAP $1:$2
     fi
-    MASTER=$(sudo docker run -d --dns $NAMESERVER_IP -h master${DOMAINNAME} $VOLUME_MAP $1:$2)
+    MASTER=$(sudo docker run -d --dns $NAMESERVER_IP -p 8080:8080 -p 50070:50070 -h master${DOMAINNAME} $VOLUME_MAP $1:$2)
 
     if [ "$MASTER" = "" ]; then
         echo "error: could not start master container from image $1:$2"
@@ -47,9 +47,9 @@ function start_workers() {
         echo "starting worker container"
 	hostname="worker${i}${DOMAINNAME}"
         if [ "$DEBUG" -gt 0 ]; then
-	    echo sudo docker run -d --dns $NAMESERVER_IP -h $hostname $VOLUME_MAP $1:$2 ${MASTER_IP}
+	    echo sudo docker run -d --dns $NAMESERVER_IP -p 8888:8888 -h $hostname $VOLUME_MAP $1:$2 ${MASTER_IP}
         fi
-	WORKER=$(sudo docker run -d --dns $NAMESERVER_IP -h $hostname $VOLUME_MAP $1:$2 ${MASTER_IP})
+	WORKER=$(sudo docker run -d --dns $NAMESERVER_IP -p 8888:8888 -h $hostname $VOLUME_MAP $1:$2 ${MASTER_IP})
 
         if [ "$WORKER" = "" ]; then
             echo "error: could not start worker container from image $1:$2"

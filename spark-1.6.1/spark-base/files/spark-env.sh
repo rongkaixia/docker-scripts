@@ -17,3 +17,6 @@ export SPARK_LOCAL_DIR=/tmp/spark
 #SPARK_DAEMON_JAVA_OPTS+=" -Dspark.akka.logLifecycleEvents=true "
 #export SPARK_DAEMON_JAVA_OPTS
 export JAVA_HOME=__JAVA_HOME__
+
+# Instead of using a random port, bind the worker to a specific port
+export SPARK_WORKER_PORT=8888
