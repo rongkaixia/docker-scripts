@@ -1,5 +1,6 @@
 # vim:set ft=dockerfile:
 FROM debian:jessie-backports
+MAINTAINER keystone rongkaixia@gmail.com
 
 # explicitly set user/group IDs
 RUN groupadd -r cassandra --gid=999 && useradd -r -g cassandra --uid=999 cassandra
