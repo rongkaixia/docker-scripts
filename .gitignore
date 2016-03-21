@@ -1,0 +1,6 @@
+# Ignore .DS_Store files on mac
+.DS_Store
+
+code/test_project/target/*
+code/test_project/project/project/*
+code/test_project/project/target/*
