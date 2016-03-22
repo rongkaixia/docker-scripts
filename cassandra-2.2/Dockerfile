@@ -1,5 +1,5 @@
 # vim:set ft=dockerfile:
-FROM debian:jessie-backports
+FROM ubuntu:precise
 MAINTAINER keystone rongkaixia@gmail.com
 
 # explicitly set user/group IDs
