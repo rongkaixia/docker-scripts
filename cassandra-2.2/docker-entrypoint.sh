@@ -34,6 +34,7 @@ if [ "$1" = 'cassandra' ]; then
 	
 	sed -ri 's/(- seeds:) "127.0.0.1"/\1 "'"$CASSANDRA_SEEDS"'"/' "$CASSANDRA_CONFIG/cassandra.yaml"
 
+	: ${CASSANDRA_BATCH_SIZE_FAIL_THRESHOLD_IN_KB:=1000}
 	for yaml in \
 		broadcast_address \
 		broadcast_rpc_address \
@@ -43,6 +44,7 @@ if [ "$1" = 'cassandra' ]; then
 		num_tokens \
 		rpc_address \
 		start_rpc \
+		batch_size_fail_threshold_in_kb \
 	; do
 		var="CASSANDRA_${yaml^^}"
 		val="${!var}"
