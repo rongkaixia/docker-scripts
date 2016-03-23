@@ -8,16 +8,34 @@ scalaVersion := "2.10.3"
 libraryDependencies ++= Seq(
 	"org.apache.spark" %% "spark-core" % "1.6.1" % "provided",
   "org.apache.spark" %% "spark-sql" % "1.6.1" % "provided",
-  "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1" withSources() withJavadoc()
+  "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1"
 )
 resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
 
+/*
 assemblyMergeStrategy in assembly := {
   case PathList(ps @ _*) if ps.last endsWith ".properties" => MergeStrategy.first
   case x =>
     val oldStrategy = (assemblyMergeStrategy in assembly).value
     oldStrategy(x)
 }
+*/
+
+assemblyMergeStrategy in assembly := {
+  case x if x.endsWith(".class") => MergeStrategy.last
+  case x if x.endsWith(".properties") => MergeStrategy.last
+  case x if x.contains("/resources/") => MergeStrategy.last
+  case x if x.startsWith("META-INF/mailcap") => MergeStrategy.last
+  case x if x.startsWith("META-INF/mimetypes.default") => MergeStrategy.first
+  case x if x.startsWith("META-INF/maven/org.slf4j/slf4j-api/pom.") => MergeStrategy.first
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    if (oldStrategy == MergeStrategy.deduplicate)
+      MergeStrategy.first
+    else
+      oldStrategy(x)
+}
+
 /*
   "org.apache.spark" %% "spark-hive" % "1.3.1",
   "org.apache.spark" %% "spark-streaming" % "1.3.1",
