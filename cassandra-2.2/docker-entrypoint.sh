@@ -30,8 +30,7 @@ if [ "$1" = 'cassandra' ]; then
 	if [ -n "${CASSANDRA_NAME:+1}" ]; then
 		: ${CASSANDRA_SEEDS:="cassandra"}
 	fi
-	# : ${CASSANDRA_SEEDS:="$CASSANDRA_BROADCAST_ADDRESS"}
-	: ${CASSANDRA_SEEDS:="$RANDOM"}
+	: ${CASSANDRA_SEEDS:="$CASSANDRA_BROADCAST_ADDRESS"}
 	
 	sed -ri 's/(- seeds:) "127.0.0.1"/\1 "'"$CASSANDRA_SEEDS"'"/' "$CASSANDRA_CONFIG/cassandra.yaml"
 
