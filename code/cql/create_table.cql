@@ -18,3 +18,5 @@ CREATE TABLE DayMarketData (
   volume double,
   PRIMARY KEY (sid, datetime, exchangeCD)
 );
+
+COPY DayMarketData from '../cassandra-data/daymarketdata';
