@@ -123,7 +123,7 @@ start_cassandra $CASSANDRA_IMAGE $CASSANDRA_VERSION
 wait_for_cassandra
 
 # start spark master
-build_spark_master_image
+# build_spark_master_image
 start_master ${image_name}-master $image_version
 wait_for_master
 if [ "$image_type" == "spark" ]; then
@@ -134,7 +134,7 @@ fi
 
 
 # start spark worker
-build_spark_worker_image
+# build_spark_worker_image
 start_workers ${image_name}-worker $image_version
 get_num_registered_workers
 echo -n "waiting for workers to register "
