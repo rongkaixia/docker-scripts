@@ -4,6 +4,7 @@ DEBUG=1
 BASEDIR=$(cd $(dirname $0); pwd)
 
 spark_images=( "spark:1.6.1" "amplab/spark:0.9.0" "amplab/spark:0.9.1" "amplab/spark:1.0.0")
+cassandra_images=( "cassandra:2.2" )
 shark_images=( "amplab/shark:0.8.0" )
 NAMESERVER_IMAGE="dnsmasq-precise"
 
@@ -14,8 +15,12 @@ image_type="?"
 image_version="?"
 NUM_WORKERS=2
 
+CASSANDRA_IMAGE=cassandra
+CASSANDRA_VERSION=2.2
+
 source $BASEDIR/start_nameserver.sh
 source $BASEDIR/start_spark_cluster.sh
+source $BASEDIR/start_cassandra.sh
 
 function check_root() {
     if [[ "$USER" != "root" ]]; then
@@ -109,9 +114,15 @@ else
     exit 0
 fi
 
+# start nameserver
 start_nameserver $NAMESERVER_IMAGE
 wait_for_nameserver
 
+# start cassandra
+start_cassandra $CASSANDRA_IMAGE $CASSANDRA_VERSION
+wait_for_cassandra
+
+# start spark master
 build_spark_master_image
 start_master ${image_name}-master $image_version
 wait_for_master
@@ -121,6 +132,8 @@ elif [ "$image_type" == "shark" ]; then
     SHELLCOMMAND="sudo $BASEDIR/start_shell.sh -i ${image_name}-shell:$SHARK_VERSION -n $NAMESERVER $VOLUME_MAP"
 fi
 
+
+# start spark worker
 build_spark_worker_image
 start_workers ${image_name}-worker $image_version
 get_num_registered_workers
@@ -131,6 +144,8 @@ until [[  "$NUM_REGISTERED_WORKERS" == "$NUM_WORKERS" ]]; do
     get_num_registered_workers
 done
 echo ""
+
+# print info
 print_cluster_info "$SHELLCOMMAND"
 if [[ "$start_shell" -eq 1 ]]; then
     SHELL_ID=$($SHELLCOMMAND | tail -n 1 | awk '{print $4}')

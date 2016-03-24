@@ -18,16 +18,16 @@ function start_cassandra() {
 
     echo "started cassandra container:      $CASSANDRA"
     sleep 3
-    CASSANDRA_IP=$(sudo docker logs $CASSANDRA 2>&1 | egrep '^CASSANDRA_IP=' | awk -F= '{print $2}' | tr -d -c "[:digit:] .")
+    CASSANDRA_IP=$(sudo docker inspect --format '{{ .NetworkSettings.IPAddress }}' $CASSANDRA)
     echo "CASSANDRA_IP:                     $CASSANDRA_IP"
     echo "address=\"/cassandra/$CASSANDRA_IP\"" >> $DNSFILE
 }
 
 function wait_for_cassandra {
     if [[ "$CASSANDRA_VERSION" == "2.2" ]]; then
-        query_string="INFO HttpServer: akka://sparkMaster/user/HttpServer started"
+        query_string="Starting listening for CQL clients"
     else
-        query_string="MasterWebUI: Started Master web UI"
+        query_string="Starting listening for CQL clients"
     fi
     echo -n "waiting for cassandra "
     sudo docker logs $CASSANDRA | grep "$query_string" > /dev/null
