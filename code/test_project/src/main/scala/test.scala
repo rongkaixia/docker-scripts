@@ -20,7 +20,7 @@ object SparkPi {
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     // val df = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").option("inferSchema", "true").load("cars.csv")
-    val df = sqlContext.read.format("org.apache.spark.sql.cassandra").options(Map( "table" -> "user", "keyspace" -> "tutorial" )).load()
+    val df = sqlContext.read.format("org.apache.spark.sql.cassandra").options(Map( "table" -> "daymarketdata", "keyspace" -> "chinamarket" )).load()
     // df.write.format("org.apache.spark.sql.cassandra").options(Map( "table" -> "daymarketdata", "keyspace" -> "chinamarket")).save()
     // df.write.cassandraFormat("words_copy", "test", "cluster_B").save()
     df.show()
