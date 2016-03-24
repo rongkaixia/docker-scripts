@@ -7,7 +7,7 @@ import org.apache.spark._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.cassandra._
 
-// import com.datastax.spark.connector._
+import com.datastax.spark.connector._
 
 // sqlContext.sql("""CREATE KEYSPACE test USING org.apache.spark.sql.cassandra""".stripMargin)
 // sqlContext.sql("""CREATE TEMPORARY TABLE words USING org.apache.spark.sql.cassandra OPTIONS (table "words", keyspace "mykeyspace", pushdown "true")""".stripMargin)

@@ -22,6 +22,7 @@ function deploy_spark_files() {
     deploy_hadoop_files
     cp /root/spark_files/spark-env.sh /opt/spark-$SPARK_VERSION/conf/
     cp /root/spark_files/log4j.properties /opt/spark-$SPARK_VERSION/conf/
+    cp /root/spark_files/spark-defaults.conf /opt/spark-$SPARK_VERSION/conf/
 }		
 
 function configure_spark() {
