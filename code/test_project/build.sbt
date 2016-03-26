@@ -8,9 +8,19 @@ scalaVersion := "2.10.3"
 libraryDependencies ++= Seq(
 	"org.apache.spark" %% "spark-core" % "1.6.1" % "provided",
   "org.apache.spark" %% "spark-sql" % "1.6.1" % "provided",
-  "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1"
+  "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1",
+
+  "org.scalanlp" %% "breeze" % "0.12",
+  "org.scalanlp" %% "breeze-natives" % "0.12",
+  "org.scalanlp" %% "breeze-viz" % "0.12"
 )
-resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
+
+resolvers ++= Seq(
+  // other resolvers here
+  // if you want to use snapshot builds (currently 0.12-SNAPSHOT), use this.
+  "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
+)
 
 /*
 assemblyMergeStrategy in assembly := {
