@@ -2,7 +2,7 @@ name := "Simple Project"
 
 version := "1.0"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.5"
 
 // additional libraries
 libraryDependencies ++= Seq(
@@ -11,14 +11,12 @@ libraryDependencies ++= Seq(
   "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1",
 
   "org.scalanlp" %% "breeze" % "0.12",
-  "org.scalanlp" %% "breeze-natives" % "0.12",
-  "org.scalanlp" %% "breeze-viz" % "0.12"
+  "org.scalanlp" %% "breeze-natives" % "0.12"
 )
 
 resolvers ++= Seq(
   // other resolvers here
   // if you want to use snapshot builds (currently 0.12-SNAPSHOT), use this.
-  "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
   "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
 )
 

@@ -122,30 +122,31 @@ def run(args):
 	query = data.ix[:,['sid', 'exchangeCD', 'datetime']]
 	query['period'] = args.n
 	print(query)
+	print(query.shape)
 
 	# save to cassandra
-	print("save to cassandra")
-	table_name = "daymarketquery" + str(args.n)
-	session.execute("DROP TABLE IF EXISTS " + table_name)
-	session.execute(
-		"CREATE TABLE " + table_name + 
-		""" (
-		sid int,
-		exchangeCD text,
-		datetime timestamp,
-		period int,
-		PRIMARY KEY (sid, datetime, exchangeCD)
-		)
-		""")
-	for (index, row) in query.iterrows():
-		session.execute(
-		"INSERT INTO " + table_name + 
-	    """
-	     (sid, exchangeCD, datetime, period)
-	    VALUES (%s, %s, %s, %s)
-	    """,
-	    (row.sid, row.exchangeCD, row.datetime.to_datetime(), row.period)
-		)
+	# print("save to cassandra")
+	# table_name = "daymarketquery" + str(args.n)
+	# session.execute("DROP TABLE IF EXISTS " + table_name)
+	# session.execute(
+	# 	"CREATE TABLE " + table_name + 
+	# 	""" (
+	# 	sid int,
+	# 	exchangeCD text,
+	# 	datetime timestamp,
+	# 	period int,
+	# 	PRIMARY KEY (sid, datetime, exchangeCD)
+	# 	)
+	# 	""")
+	# for (index, row) in query.iterrows():
+	# 	session.execute(
+	# 	"INSERT INTO " + table_name + 
+	#     """
+	#      (sid, exchangeCD, datetime, period)
+	#     VALUES (%s, %s, %s, %s)
+	#     """,
+	#     (row.sid, row.exchangeCD, row.datetime.to_datetime(), row.period)
+	# 	)
 
 if __name__ == "__main__":
 	parser = init_command_parser()
