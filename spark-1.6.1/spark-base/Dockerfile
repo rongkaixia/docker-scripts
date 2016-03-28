@@ -5,7 +5,7 @@ FROM apache-hadoop-hdfs-precise:1.2.1
 
 MAINTAINER keystone rongkaixia@gmail.com
 
-ENV SCALA_VERSION 2.10.3
+ENV SCALA_VERSION 2.10.5
 ENV SPARK_VERSION 1.6.1
 ENV SCALA_HOME /opt/scala-$SCALA_VERSION
 ENV SPARK_HOME /opt/spark-$SPARK_VERSION
