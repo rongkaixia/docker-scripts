@@ -2,32 +2,21 @@ name := "Simple Project"
 
 version := "1.0"
 
-scalaVersion := "2.10.5"
+scalaVersion := "2.10.3"
 
-// additional libraries
 libraryDependencies ++= Seq(
-	"org.apache.spark" %% "spark-core" % "1.6.1" % "provided",
+  "org.apache.spark" %% "spark-core" % "1.6.1" % "provided",
   "org.apache.spark" %% "spark-sql" % "1.6.1" % "provided",
   "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1",
 
   "org.scalanlp" %% "breeze" % "0.12",
   "org.scalanlp" %% "breeze-natives" % "0.12"
 )
-
 resolvers ++= Seq(
   // other resolvers here
   // if you want to use snapshot builds (currently 0.12-SNAPSHOT), use this.
   "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
 )
-
-/*
-assemblyMergeStrategy in assembly := {
-  case PathList(ps @ _*) if ps.last endsWith ".properties" => MergeStrategy.first
-  case x =>
-    val oldStrategy = (assemblyMergeStrategy in assembly).value
-    oldStrategy(x)
-}
-*/
 
 assemblyMergeStrategy in assembly := {
   case x if x.endsWith(".class") => MergeStrategy.last

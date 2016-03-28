@@ -13,14 +13,12 @@ import breeze.linalg._
 import breeze.math._
 import breeze.numerics._
 import breeze.stats.{mean, stddev}
-// // sqlContext.sql("""CREATE KEYSPACE test USING org.apache.spark.sql.cassandra""".stripMargin)
-// // sqlContext.sql("""CREATE TEMPORARY TABLE words USING org.apache.spark.sql.cassandra OPTIONS (table "words", keyspace "mykeyspace", pushdown "true")""".stripMargin)
-
 
 object Stat {
     // each row of A is an observation
     def normalization(A: DenseMatrix[Double]): DenseMatrix[Double] = {
-        val _mean = mean(A(::,*)).toDenseVector
+        // val _mean = mean(A(::,*)).toDenseVector
+        val _mean = mean(A(::,*)).t
         val _std = stddev(A(::,*))
         var i = 0
         var ret = new DenseMatrix[Double](A.rows, A.cols, A.toArray)
@@ -41,7 +39,8 @@ object Stat {
         var dist = euclideanDistanceKernel(A)
         val allMean = mean(dist)
         val rowMean = mean(dist(*,::))
-        val colMean = mean(dist(::,*)).toDenseVector
+        // val colMean = mean(dist(::,*)).toDenseVector
+        val colMean = mean(dist(::,*)).t
         dist(*,::) -= rowMean
         dist(::,*) -= colMean
         dist += allMean
@@ -109,6 +108,9 @@ object SparkPi {
     val cass = sc.cassandraTable("chinamarket", "daymarketdata")
     val df = Context.cassandraContext.sql("SELECT * from chinamarket.daymarketquery100 limit 1000")
     // val tmp = new DenseMatrix(3,2, Array(1.0,2,3,4,5,6))
+    // println("==============")
+    // println(Stat.brownianCorrelation(tmp,tmp))
+    // Step 1 - 读取所有Sample数据
     val sampleIndexArray = df.collect()
     val sampleArray = sampleIndexArray.map(row => {
         cass.select("open", "high", "low", "close")
@@ -118,16 +120,9 @@ object SparkPi {
         })
     val tmp = sampleArray.map(Utils.CassandraTableScanRDD2DoubleArray)
     println(tmp)
-    // df.foreach(SearchEngine.doMatch)
-    // val df = sc.cassandraTable("chinamarket", "daymarketdata").toArray()
-    // println(df)
-    // val df = sqlContext.read.format("com.databricks.spark.csv").option("header", "true").option("inferSchema", "true").load("cars.csv")
-    // val df = sqlContext.read.format("org.apache.spark.sql.cassandra").options(Map( "table" -> "daymarketdata", "keyspace" -> "chinamarket" )).load()
-    // df.write.cassandraFormat("words_copy", "test", "cluster_B").save()
-    // df.show()
-    // println(SearchEngine.brownianCorrelation(tmp, tmp))
+    // Step 2 - 分发任务，计算brownianCorrelation
     println("Done!")
-    // sc.stop()
+    sc.stop()
   }
 }
 // scalastyle:on println
