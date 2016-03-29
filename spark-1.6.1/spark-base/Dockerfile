@@ -17,7 +17,7 @@ RUN (cd / && gunzip < scala-$SCALA_VERSION.tgz)|(cd /opt && tar -xvf -)
 RUN rm /scala-$SCALA_VERSION.tgz
 
 # Install Spark 
-ADD http://d3kbcqa49mib13.cloudfront.net/spark-$SPARK_VERSION-bin-hadoop1.tgz /
+ADD http://apache.fayea.com/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop1.tgz /
 RUN (cd / && gunzip < spark-$SPARK_VERSION-bin-hadoop1.tgz)|(cd /opt && tar -xvf -)
 RUN (ln -s /opt/spark-$SPARK_VERSION-bin-hadoop1 /opt/spark-$SPARK_VERSION && rm /spark-$SPARK_VERSION-bin-hadoop1.tgz)
 
