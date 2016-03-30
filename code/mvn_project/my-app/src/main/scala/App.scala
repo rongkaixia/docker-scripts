@@ -6,8 +6,11 @@ import scala.math.random
 import org.apache.spark._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.cassandra._
-
 import com.datastax.spark.connector._
+
+import scala.collection.JavaConversions._
+import com.datastax.driver.core.ResultSet
+import com.keystone.cassandra.CassandraClient
 
 import breeze.linalg._
 import breeze.math._
@@ -15,10 +18,6 @@ import breeze.numerics._
 import breeze.stats.{mean, stddev}
 
 object Stat {
-    def test(A: DenseMatrix[Double]): Double = {
-        val _mean = mean(A(::,*)).toDenseVector
-        return 1.0
-    }
     // each row of A is an observation
     def normalization(A: DenseMatrix[Double]): DenseMatrix[Double] = {
         val _mean = mean(A(::,*)).toDenseVector
@@ -63,15 +62,20 @@ object Stat {
 
 }
 
-object Context{
-    var sparkContext: SparkContext = _
-
-    var sqlContext: SQLContext = _
-
-    var cassandraContext: CassandraSQLContext = _
-}
-
 object Utils{
+    def cassandraResultSet2DoubleDenseMatrix(data: ResultSet): DenseMatrix[Double] = {
+        val listRows = data.all.toList
+        val nRows = listRows.size
+        val nCols = listRows(0).getColumnDefinitions.size
+        var ret = new DenseMatrix[Double](nRows, nCols)
+        var rowIndex = 0
+        listRows.map( row => {
+            (0 to nCols - 1).foreach(colIndex => {ret(rowIndex,colIndex) = row.getDouble(colIndex)})
+            rowIndex += 1
+            })
+        return ret
+    }
+
     def cassandraTableScanRDD2DoubleArray(table: com.datastax.spark.connector.rdd.CassandraTableScanRDD[CassandraRow], rowSize: Int): DenseMatrix[Double] = {
         var tmp = table.map(row => {
                 var ret = new Array[Double](row.size)
@@ -89,12 +93,38 @@ object SearchEngine{
     // def _row2DoubleArray(row: org.apache.spark.sql.Row){
     //     var ret = new Array[Double](row.size)
     // }
-
     def doMatch(A: DenseMatrix[Double], B: DenseMatrix[Double]): Double = {
         var ret = Stat.brownianCorrelation(A,B)
         return ret
     }
 
+    def doMatch2(query: SampleIndex, cassandraHost: String, cassandraPort: Int): Double = {
+        var client = new CassandraClient
+        client.connect(cassandraHost, cassandraPort)
+        val queryString = "SELECT open, high, low, close FROM chinamarket.daymarketdata where " +
+            "sid = " + query.sid + " AND datetime >= '" + query.datetime + 
+            "' LIMIT " + query.period
+        var result = client.execute(queryString)
+        var queryMatrix = Utils.cassandraResultSet2DoubleDenseMatrix(result)
+        // client.close()
+        return Stat.brownianCorrelation(queryMatrix, queryMatrix)
+    }
+}
+
+@serializable
+class SampleIndex(sid_ :Int, datetime_ :java.util.Date, period_ :Int){
+    var sid: Int = sid_
+    var datetime: java.util.Date = datetime_
+    var period: Int = period_
+    // var exchangecd: String = _
+}
+
+object Context{
+    var sparkContext: SparkContext = _
+
+    var sqlContext: SQLContext = _
+
+    var cassandraContext: CassandraSQLContext = _
 }
 
 /** Computes an approximation to pi */
@@ -108,9 +138,8 @@ object App{
     Context.sqlContext = new SQLContext(sc)
     Context.cassandraContext = new CassandraSQLContext(sc)
     val cass = sc.cassandraTable("chinamarket", "daymarketdata")
-    // val tmp = new DenseMatrix(3,2, Array(1.0,2,3,4,5,6))
-    // println(Stat.brownianCorrelation(tmp,tmp))
-    // Step 1 - 读取所有Sample数据
+    /* 旧代码
+    // Step 1 - 读取所有待匹配的Sample数据
     val df = Context.cassandraContext.sql("SELECT * from chinamarket.daymarketquery100 limit 200")
     val sampleIndexArray = df.collect()
     val sampleArray = sampleIndexArray.map(row => {
@@ -126,6 +155,17 @@ object App{
     val smapleRDD = sc.parallelize(tmp.slice(1,tmp.size))
     val result = smapleRDD.map(SearchEngine.doMatch(query, _)).collect()
     result.foreach(println)
+    */
+    val cassandraHost = conf.get("spark.cassandra.connection.host")
+    val cassandraPort = conf.getInt("spark.cassandra.connection.port", 9042)
+    val period = 10
+    val rddRows = Context.cassandraContext.sql("SELECT * from chinamarket.daymarketquery100 limit 200")
+    var tmp = rddRows
+    .map(row => {
+        new SampleIndex(row.getInt(row.fieldIndex("sid")), row.getTimestamp(row.fieldIndex("datetime")), period)
+        })
+    .map(SearchEngine.doMatch2(_, cassandraHost, cassandraPort))
+    tmp.collect.foreach(println)
     println("Done!")
     sc.stop()
   }

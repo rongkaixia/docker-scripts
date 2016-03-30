@@ -49,13 +49,18 @@
           <groupId>org.scalanlp</groupId>
           <artifactId>breeze_2.10</artifactId>
           <version>0.11.2</version>
-          <scope>provided</scope>
+          <!-- <scope>provided</scope> -->
       </dependency>
       <dependency>
           <groupId>com.websudos</groupId>
           <artifactId>phantom_2.10</artifactId>
           <version>1.22.0</version>
           <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.datastax.cassandra</groupId>
+        <artifactId>cassandra-driver-core</artifactId>
+        <version>3.0.0</version>
       </dependency>
       <dependency>
           <groupId>junit</groupId>
@@ -66,8 +71,6 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>src/main/scala</sourceDirectory>
-    <testSourceDirectory>src/test/scala</testSourceDirectory>
     <plugins>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
@@ -99,7 +102,7 @@
                 </execution>
             </executions>
             <configuration>
-              <scalaVersion>2.10.5</scalaVersion>
+                <scalaVersion>2.10.5</scalaVersion>
             </configuration>
         </plugin>
     </plugins>
