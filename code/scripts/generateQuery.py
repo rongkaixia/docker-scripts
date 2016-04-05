@@ -9,6 +9,7 @@ import os
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from random import randint
 import argparse
 import dateutil
 from os import listdir
@@ -37,7 +38,9 @@ def init_command_parser():
 	parser.add_argument('--dt', type=str, help='datetime column', default="datetime")
 	parser.add_argument('--dt-format', type=str, help='datetime format', default="%Y-%m-%d %H:%M:%S")
 	parser.add_argument('--delimiter', type=str, help='delimiter', default=',')
-	parser.add_argument('--n', type=int, help='time period', default=100)
+	parser.add_argument('--n', type=int, help='time period', default=10)
+	parser.add_argument('--m', type=int, help='number of samples', default=100)
+
 	return parser
 
 def read_csv(file, args):
@@ -109,44 +112,66 @@ def run(args):
 	for file in csvfiles:
 		print("processing %s"%(file))
 		df = read_csv(join(args.data_path, file), args)
-		df = df.iloc[:-args.n,:]
+		# df = df.iloc[:-args.n,:]
 		data = pd.concat([data, df])
 
 	# random shuffle
-	print("random shuffle")
-	data.index = range(len(data.index))
-	data = data.reindex(np.random.permutation(data.index))
+	# print("random shuffle")
+	# data.index = range(len(data.index))
+	# data = data.reindex(np.random.permutation(data.index))
 
 	# generate query
 	print("generate query")
-	query = data.ix[:,['sid', 'exchangeCD', 'datetime']]
+	basket = {}
+	query = []
+	for i in range(args.m):
+		while True:
+			sids = list(data["sid"])
+			index = randint(0, len(sids))
+			selected_sid = sids[index]
+			sid_df = data[data["sid"] == selected_sid]
+			times = list(sid_df["datetime"])
+			index = randint(0, len(times) - args.n)
+			selected_time = times[index]
+			if selected_sid not in basket:
+				basket[selected_sid] = []
+			if selected_time not in basket[selected_sid]:
+				basket[selected_sid].append(selected_time)
+				df = sid_df[sid_df['datetime'] >= selected_time]
+				query.append([selected_sid, df.iloc[0].datetime, df.iloc[args.n - 1].datetime])
+				break
+		if i%100 == 0:
+			print("%d done."%(i))
+
+	query = pd.DataFrame(query)
+	query.columns = ["sid", "beginTime", "endTime"]
 	query['period'] = args.n
 	print(query)
 	print(query.shape)
 
 	# save to cassandra
-	# print("save to cassandra")
-	# table_name = "daymarketquery" + str(args.n)
-	# session.execute("DROP TABLE IF EXISTS " + table_name)
-	# session.execute(
-	# 	"CREATE TABLE " + table_name + 
-	# 	""" (
-	# 	sid int,
-	# 	exchangeCD text,
-	# 	datetime timestamp,
-	# 	period int,
-	# 	PRIMARY KEY (sid, datetime, exchangeCD)
-	# 	)
-	# 	""")
-	# for (index, row) in query.iterrows():
-	# 	session.execute(
-	# 	"INSERT INTO " + table_name + 
-	#     """
-	#      (sid, exchangeCD, datetime, period)
-	#     VALUES (%s, %s, %s, %s)
-	#     """,
-	#     (row.sid, row.exchangeCD, row.datetime.to_datetime(), row.period)
-	# 	)
+	print("save to cassandra")
+	table_name = "daymarketquery" + str(args.n)
+	session.execute("DROP TABLE IF EXISTS " + table_name)
+	session.execute(
+		"CREATE TABLE " + table_name + 
+		""" (
+		sid int,
+		beginTime timestamp,
+		endTime timestamp,
+		period int,
+		PRIMARY KEY (sid, beginTime, endTime)
+		)
+		""")
+	for (index, row) in query.iterrows():
+		session.execute(
+		"INSERT INTO " + table_name + 
+	    """
+	     (sid, beginTime, endTime, period)
+	    VALUES (%s, %s, %s, %s)
+	    """,
+	    (row.sid, row.beginTime.to_datetime(), row.endTime.to_datetime(), row.period)
+		)
 
 if __name__ == "__main__":
 	parser = init_command_parser()

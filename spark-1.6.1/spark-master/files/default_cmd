@@ -14,6 +14,10 @@ echo "starting Hadoop Namenode"
 sudo -u hdfs hadoop namenode -format > /dev/null 2>&1
 service hadoop-namenode start > /dev/null 2>&1
 
+echo "creating history directory"
+sudo -u hdfs hadoop dfsadmin -safemode wait
+sudo -u hdfs hadoop fs -mkdir hdfs://$IP:9000/user/hdfs/spark-events
+
 echo "starting sshd"
 /usr/sbin/sshd
 

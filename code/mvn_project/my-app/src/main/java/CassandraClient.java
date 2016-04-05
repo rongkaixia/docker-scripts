@@ -3,7 +3,7 @@ package com.keystone.cassandra;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
-
+import com.datastax.driver.core.policies.*;
 public class CassandraClient {
    private Cluster cluster;
    private Session session;
@@ -12,6 +12,9 @@ public class CassandraClient {
       cluster = Cluster.builder()
             .addContactPoint(node)
             .withPort(port)
+            .withQueryOptions(new QueryOptions().setConsistencyLevel(ConsistencyLevel.ONE))
+            .withRetryPolicy(DefaultRetryPolicy.INSTANCE)
+            // .withLoadBalancingPolicy(new TokenAwarePolicy(new DCAwareRoundRobinPolicy()))
             .build();
       session = cluster.connect();
       Metadata metadata = cluster.getMetadata();
@@ -21,6 +24,10 @@ public class CassandraClient {
          System.out.printf("Datatacenter: %s; Host: %s; Rack: %s\n",
                host.getDatacenter(), host.getAddress(), host.getRack());
       }
+   }
+
+   public Session getSession(){
+      return session;
    }
 
    public ResultSet execute(String query) {
