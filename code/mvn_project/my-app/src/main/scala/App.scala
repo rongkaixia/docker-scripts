@@ -21,82 +21,57 @@ import breeze.math._
 import breeze.numerics._
 import breeze.stats.{mean, stddev}
 
-object Utils{
-    def seqCassandraRow2DoubleDenseMatrix(data: Seq[CassandraRow]): DenseMatrix[Double] = {
-        val nRows = data.size
-        val nCols = 4
-        var ret = new DenseMatrix[Double](nRows, nCols)
-        var rowIndex = 0
-        data.foreach( row => {
-            ret(rowIndex, 0) = row.getDouble("open")
-            ret(rowIndex, 1) = row.getDouble("high")
-            ret(rowIndex, 2) = row.getDouble("low")
-            ret(rowIndex, 3) = row.getDouble("close")
-            // (0 to nCols - 1).foreach(colIndex => {ret(rowIndex,colIndex) = row.getDouble(colIndex)})
-            rowIndex += 1
-            })
-        return ret
-    }
+// object Utils{
+//     def seqCassandraRow2DoubleDenseMatrix(data: Seq[CassandraRow]): DenseMatrix[Double] = {
+//         val nRows = data.size
+//         val nCols = 4
+//         var ret = new DenseMatrix[Double](nRows, nCols)
+//         var rowIndex = 0
+//         data.foreach( row => {
+//             ret(rowIndex, 0) = row.getDouble("open")
+//             ret(rowIndex, 1) = row.getDouble("high")
+//             ret(rowIndex, 2) = row.getDouble("low")
+//             ret(rowIndex, 3) = row.getDouble("close")
+//             // (0 to nCols - 1).foreach(colIndex => {ret(rowIndex,colIndex) = row.getDouble(colIndex)})
+//             rowIndex += 1
+//             })
+//         return ret
+//     }
 
-    def cassandraResultSet2DoubleDenseMatrix(data: ResultSet): DenseMatrix[Double] = {
-        val listRows = data.all.toList
-        val nRows = listRows.size
-        val nCols = listRows(0).getColumnDefinitions.size
-        var ret = new DenseMatrix[Double](nRows, nCols)
-        var rowIndex = 0
-        listRows.map( row => {
-            (0 to nCols - 1).foreach(colIndex => {ret(rowIndex,colIndex) = row.getDouble(colIndex)})
-            rowIndex += 1
-            })
-        return ret
-    }
+//     def cassandraResultSet2DoubleDenseMatrix(data: ResultSet): DenseMatrix[Double] = {
+//         val listRows = data.all.toList
+//         val nRows = listRows.size
+//         val nCols = listRows(0).getColumnDefinitions.size
+//         var ret = new DenseMatrix[Double](nRows, nCols)
+//         var rowIndex = 0
+//         listRows.map( row => {
+//             (0 to nCols - 1).foreach(colIndex => {ret(rowIndex,colIndex) = row.getDouble(colIndex)})
+//             rowIndex += 1
+//             })
+//         return ret
+//     }
 
-    def cassandraTableScanRDD2DoubleArray(table: com.datastax.spark.connector.rdd.CassandraTableScanRDD[CassandraRow], rowSize: Int): DenseMatrix[Double] = {
-        var tmp = table.map(row => {
-                var ret = new Array[Double](row.size)
-                var i = 0
-                for(i <- 0 to row.size - 1){
-                    ret(i) = row.getDouble(i)
-                }
-                ret
-            }).reduce((a: Array[Double],b: Array[Double]) => a ++ b)
-        return new DenseMatrix[Double](tmp.size/rowSize, rowSize, tmp)
-    }
-}
+//     def cassandraTableScanRDD2DoubleArray(table: com.datastax.spark.connector.rdd.CassandraTableScanRDD[CassandraRow], rowSize: Int): DenseMatrix[Double] = {
+//         var tmp = table.map(row => {
+//                 var ret = new Array[Double](row.size)
+//                 var i = 0
+//                 for(i <- 0 to row.size - 1){
+//                     ret(i) = row.getDouble(i)
+//                 }
+//                 ret
+//             }).reduce((a: Array[Double],b: Array[Double]) => a ++ b)
+//         return new DenseMatrix[Double](tmp.size/rowSize, rowSize, tmp)
+//     }
+// }
 
-@serializable
-class SamplePeriod(sid_ :Int, beginTime_ :java.util.Date, endTime_ :java.util.Date, period_ :Int){
-    var sid: Int = sid_
-    var beginTime: java.util.Date = beginTime_
-    var endTime: java.util.Date = endTime_
-    var period: Int = period_
-    // var exchangecd: String = _
-}
-
-class OHLCSearchEngine(
-    @transient val sc: SparkContext,
-    val conf: OHLCSearchEngineConf){
-
-    private val _sc = sc
-    private val _conf = conf
-
-    def _checkConfigure(){
-
-    }
-
-    def similarity(){
-        val cass = sc.cassandraTable("chinamarket", "daymarketdata")
-        val selectColumns = _conf
-    }
-
-    def topN(n: Int){
-
-    }
-
-    def test(){
-
-    }
-}
+// @serializable
+// class SamplePeriod(sid_ :Int, beginTime_ :java.util.Date, endTime_ :java.util.Date, period_ :Int){
+//     var sid: Int = sid_
+//     var beginTime: java.util.Date = beginTime_
+//     var endTime: java.util.Date = endTime_
+//     var period: Int = period_
+//     // var exchangecd: String = _
+// }
 
 object SearchEngine{
     // def _row2DoubleArray(row: org.apache.spark.sql.Row){
@@ -173,7 +148,7 @@ object App{
     Context.sparkContext = sc
     Context.sqlContext = new SQLContext(sc)
     Context.cassandraContext = new CassandraSQLContext(sc)
-    val cass = sc.cassandraTable("chinamarket", "daymarketdata")
+    val cass = sc.cassandraTable("chinamarket", "daymarketdata100")
     /* 旧代码
     // Step 1 - 读取所有待匹配的Sample数据
     val df = Context.cassandraContext.sql("SELECT * from chinamarket.daymarketquery100 limit 200")
@@ -198,13 +173,13 @@ object App{
     val cassandraHost = conf.get("spark.cassandra.connection.host")
     val cassandraPort = conf.getInt("spark.cassandra.connection.port", 9042)
     val period = 10
-    val rddRows = Context.cassandraContext.sql("SELECT * from chinamarket.daymarketquery11 limit 1000")
-    var tmp = rddRows.map(row => {new SamplePeriod(row.getInt(row.fieldIndex("sid")), row.getTimestamp(row.fieldIndex("begintime")), row.getTimestamp(row.fieldIndex("endtime")), period)})
+    val rddRows = Context.cassandraContext.sql("SELECT * from chinamarket.daymarketquery11 limit 10000")
+    var tmp = rddRows.collect.map(row => {new SamplePeriod(row.getInt(row.fieldIndex("sid")), row.getTimestamp(row.fieldIndex("begintime")), row.getTimestamp(row.fieldIndex("endtime")), period)})
     // .map(SearchEngine.doMatch2(_, cassandraHost, cassandraPort))
     // .mapPartitions(SearchEngine.doMatch3(_, cassandraHost, cassandraPort))
 
     // Step 2 - construct sharedVariable and query string
-    var sidTimeFilter: Seq[SamplePeriod] = tmp.collect.toSeq
+    var sidTimeFilter: Seq[SamplePeriod] = tmp.toSeq
     val broadcastVar = sc.broadcast(sidTimeFilter)
     var sids = Set[Int]()
     sidTimeFilter.foreach(ele => sids.update(ele.sid, true))

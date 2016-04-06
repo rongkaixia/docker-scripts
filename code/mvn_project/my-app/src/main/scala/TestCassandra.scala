@@ -14,7 +14,7 @@ import breeze.math._
 import breeze.numerics._
 import breeze.stats.{mean, stddev}
 
-import com.keystone.OHLCSearchEngine.OHLCSearchEngineConf
+import com.keystone.OHLCSearchEngine.{OHLCSearchEngineConf, Stat}
 object Timer{
    def time[R](block: => R): R = {
         val t0 = System.nanoTime()
@@ -30,6 +30,9 @@ object TestCassandra{
   def main(args: Array[String]) {
     val c = new OHLCSearchEngineConf()
     c.print
+    // var t: String =  c.getSidColumn
+    var t = c.getSidColumn :: List("11")
+    println(t)
     /*
     var cassandraHost = "172.17.0.1"
     var cassandraPort = 9042
