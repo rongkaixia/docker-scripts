@@ -14,6 +14,7 @@ import breeze.math._
 import breeze.numerics._
 import breeze.stats.{mean, stddev}
 
+import com.keystone.OHLCSearchEngine.OHLCSearchEngineConf
 object Timer{
    def time[R](block: => R): R = {
         val t0 = System.nanoTime()
@@ -27,6 +28,9 @@ object Timer{
 /** Computes an approximation to pi */
 object TestCassandra{
   def main(args: Array[String]) {
+    val c = new OHLCSearchEngineConf()
+    c.print
+    /*
     var cassandraHost = "172.17.0.1"
     var cassandraPort = 9042
     var client = new CassandraClient
@@ -57,6 +61,7 @@ object TestCassandra{
         // var queryMatrix = Utils.cassandraResultSet2DoubleDenseMatrix(data)
         // println(queryMatrix)
     }
+    */
   }
 }
 // scalastyle:on println

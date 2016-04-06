@@ -111,7 +111,7 @@ def save_to_cassandra(session, df):
 	for (index, row) in df.iterrows():
 		session.execute(
 	    """
-	    INSERT INTO daymarketdata (sid, exchangeCD, datetime, open, high, low, close, pre_close, volume)
+	    INSERT INTO daymarketdata100 (sid, exchangeCD, datetime, open, high, low, close, pre_close, volume)
 	    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
 	    """,
 	    (row.sid, row.exchangeCD, row.datetime.to_datetime(), row.open, row.high, row.low, row.close, row.pre_close, row.volume)
