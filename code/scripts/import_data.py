@@ -81,6 +81,7 @@ def read_csv(file, args):
 		dt_column = [datetime.strptime(x, args.dt_format) for x in df[args.dt]]
 	except Exception as e:
 		# try dateutil.parser
+		print("WARNING: using dateutil.parser to parse time")
 		try:
 			dt_column = [dateutil.parser.parse(x) for x in df[args.dt]]
 		except Exception as e:
@@ -111,7 +112,7 @@ def save_to_cassandra(session, df):
 	for (index, row) in df.iterrows():
 		session.execute(
 	    """
-	    INSERT INTO daymarketdata100 (sid, exchangeCD, datetime, open, high, low, close, pre_close, volume)
+	    INSERT INTO daymarketdata (sid, exchangeCD, datetime, open, high, low, close, pre_close, volume)
 	    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
 	    """,
 	    (row.sid, row.exchangeCD, row.datetime.to_datetime(), row.open, row.high, row.low, row.close, row.pre_close, row.volume)

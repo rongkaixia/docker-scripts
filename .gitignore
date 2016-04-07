@@ -3,6 +3,7 @@
 
 code/metastore_db/*
 code/wind-data/*
+code/wind-data-all/*
 code/test_project/target/*
 code/test_project/project/project/*
 code/test_project/project/target/*

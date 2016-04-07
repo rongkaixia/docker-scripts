@@ -35,7 +35,7 @@ object Utils{
             // (0 to nCols - 1).foreach(colIndex => {ret(rowIndex,colIndex) = row.getDouble(colIndex)})
             rowIndex += 1
             })
-        return ret
+        ret
     }
 }
 
@@ -49,20 +49,20 @@ class SamplePeriod(sid_ :Int, beginTime_ :java.util.Date, endTime_ :java.util.Da
 }
 
 // TODO: 需要refactor
-object WorkerFunction{
-    def apply(param: (Int, Seq[com.datastax.spark.connector.CassandraRow]), samples: List[SamplePeriod]): Double = {
-        var ret = 0.0
-        var samplesWithSid = samples.filter(_.sid == param._1)
-        samplesWithSid.foreach( sample => {
-            // filter data
-            var sampleData = param._2.filter(_.getDate("datetime").compareTo(sample.beginTime) >= 0).filter(_.getDate("datetime").compareTo(sample.endTime) <=0)
-            var matrix = Utils.seqCassandraRow2DoubleDenseMatrix(sampleData)
-            var corr = Stat.brownianCorrelation(matrix, matrix)
-            ret += 1.0
-        })
-        ret
-    }
-}
+// object WorkerFunction{
+//     def apply(param: (Int, Seq[com.datastax.spark.connector.CassandraRow]), samples: List[SamplePeriod]): Double = {
+//         var ret = 0.0
+//         var samplesWithSid = samples.filter(_.sid == param._1)
+//         samplesWithSid.foreach( sample => {
+//             // filter data
+//             var sampleData = param._2.filter(_.getDate("datetime").compareTo(sample.beginTime) >= 0).filter(_.getDate("datetime").compareTo(sample.endTime) <=0)
+//             var matrix = Utils.seqCassandraRow2DoubleDenseMatrix(sampleData)
+//             var corr = Stat.brownianCorrelation(matrix, matrix)
+//             ret += 1.0
+//         })
+//         ret
+//     }
+// }
 
 class OHLCSearchEngine(
     @transient val sc: SparkContext,
@@ -88,21 +88,21 @@ class OHLCSearchEngine(
         val broadcastVar = _sc.broadcast(samples)
 
         // worker function
-        // def workerFunc(param: (Int, Seq[com.datastax.spark.connector.CassandraRow])): Double = {
-        //     var ret = 0.0
-        //     var samplesWithSid = broadcastVar.value.filter(_.sid == param._1)
-        //     samplesWithSid.foreach( sample => {
-        //         // filter data
-        //         var sampleData = param._2.filter(_.getDate("datetime").compareTo(sample.beginTime) >= 0).filter(_.getDate("datetime").compareTo(sample.endTime) <=0)
-        //         var matrix = Utils.seqCassandraRow2DoubleDenseMatrix(sampleData)
-        //         var corr = Stat.brownianCorrelation(matrix, matrix)
-        //         ret += 1.0
-        //     })
-        //     ret
-        // }
-
+        val workerFunc: ((Int, Seq[com.datastax.spark.connector.CassandraRow]), List[SamplePeriod]) => Double = 
+        (param: (Int, Seq[com.datastax.spark.connector.CassandraRow]), samples: List[SamplePeriod]) => {
+            var ret = 0.0
+            var samplesWithSid = samples.filter(_.sid == param._1)
+            samplesWithSid.foreach( sample => {
+                // filter data
+                var sampleData = param._2.filter(_.getDate("datetime").compareTo(sample.beginTime) >= 0).filter(_.getDate("datetime").compareTo(sample.endTime) <=0)
+                var matrix = Utils.seqCassandraRow2DoubleDenseMatrix(sampleData)
+                var corr = Stat.brownianCorrelation(matrix, matrix)
+                ret += 1.0
+            })
+            ret
+        }
         // run and collect result
-        data.map(WorkerFunction.apply(_, broadcastVar.value)).toArray
+        data.map(workerFunc(_, broadcastVar.value)).toArray
     }
 
     def topN(n: Int){
@@ -137,6 +137,7 @@ object Test{
     val samples = tmp.toList
 
     // run
+    println("===================RUNNING CALCULATE SIMILARITY====================")
     engine.similarity(samples).foreach(println)
     println("Done!")
     sc.stop()

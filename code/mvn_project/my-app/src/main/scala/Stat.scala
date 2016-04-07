@@ -2,7 +2,6 @@
 package com.keystone.OHLCSearchEngine
 
 import scala.math.random
-import scala.collection.mutable.{Set, ListBuffer}
 import scala.reflect.ClassTag
 import scala.collection.JavaConversions._
 
@@ -20,7 +19,7 @@ object Stat {
         var i = 0
         var ret = new DenseMatrix[Double](A.rows, A.cols, A.toArray)
         ret(*,::) -= _mean
-        return ret
+        ret
     }
 
     def euclideanDistanceKernel(A: DenseMatrix[Double]): DenseMatrix[Double] = {
@@ -29,7 +28,7 @@ object Stat {
         val _sum2 = sum(pow(A,2),Axis._1)
         ret(*,::) += _sum2
         ret(::,*) += _sum2
-        return sqrt(ret)
+        sqrt(ret)
     }
 
     def centerDistance(A: DenseMatrix[Double]): DenseMatrix[Double] = {
@@ -41,17 +40,17 @@ object Stat {
         dist(*,::) -= rowMean
         dist(::,*) -= colMean
         dist += allMean
-        return dist
+        dist
     }
 
     def brownianCov(A: DenseMatrix[Double], B: DenseMatrix[Double]): Double = {
         val Adist = centerDistance(euclideanDistanceKernel(A))
         val Bdist = centerDistance(euclideanDistanceKernel(B))
-        return sqrt(sum(Adist :* Bdist)) / Adist.rows
+        sqrt(sum(Adist :* Bdist)) / Adist.rows
     }
 
     def brownianCorrelation(A: DenseMatrix[Double], B: DenseMatrix[Double]): Double = {
-        return brownianCov(A,B)/sqrt(brownianCov(A,A)*brownianCov(B,B))
+        brownianCov(A,B)/sqrt(brownianCov(A,A)*brownianCov(B,B))
     }
 
 }

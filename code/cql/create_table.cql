@@ -19,6 +19,7 @@ CREATE TABLE DayMarketData10 (
   PRIMARY KEY (sid, datetime, exchangeCD)
 );
 
+/*
 CREATE TABLE DayMarketData (
   sid int,
   exchangeCD text,
@@ -31,6 +32,7 @@ CREATE TABLE DayMarketData (
   volume double,
   PRIMARY KEY (sid, datetime, exchangeCD)
 );
+*/
 
 CREATE TABLE DayMarketData100 (
   sid int,
@@ -53,7 +55,7 @@ CREATE TABLE DayMarketQuery11 (
     PRIMARY KEY (sid, begintime, endtime)
 );
 
-COPY DayMarketData from '../cassandra-data/daymarketdata';
+/* COPY DayMarketData from '../cassandra-data/daymarketdata'; */
 COPY DayMarketData10 from '../cassandra-data/daymarketdata10';
 COPY DayMarketData100 from '../cassandra-data/daymarketdata100';
 COPY DayMarketQuery11 from '../cassandra-data/daymarketquery11-100';
