@@ -12,14 +12,12 @@ import breeze.stats.{mean, stddev}
 
 object Stat {
     // each row of A is an observation
+    // TODO: Check Normalization
     def normalization(A: DenseMatrix[Double]): DenseMatrix[Double] = {
         val _mean = mean(A(::,*)).toDenseVector
         // val _mean = mean(A(::,*)).t
         val _std = stddev(A(::,*))
-        var i = 0
-        var ret = new DenseMatrix[Double](A.rows, A.cols, A.toArray)
-        ret(*,::) -= _mean
-        ret
+        A(*,::) / _mean
     }
 
     def euclideanDistanceKernel(A: DenseMatrix[Double]): DenseMatrix[Double] = {
@@ -50,7 +48,9 @@ object Stat {
     }
 
     def brownianCorrelation(A: DenseMatrix[Double], B: DenseMatrix[Double]): Double = {
-        brownianCov(A,B)/sqrt(brownianCov(A,A)*brownianCov(B,B))
+        val nA = normalization(A)
+        val nB = normalization(B)
+        brownianCov(nA,nB)/sqrt(brownianCov(nA,nA)*brownianCov(nB,nB))
     }
 
 }

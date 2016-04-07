@@ -80,7 +80,10 @@ trait CassandraClusterProperty {
     }
 }
 
-class OHLCSearchEngineConf extends CassandraClusterProperty with DateColumnConf with SidColumnConf with DefaultOHLCMatchColumnsConf{
+class OHLCSearchEngineConf extends CassandraClusterProperty 
+with DateColumnConf 
+with SidColumnConf 
+with DefaultOHLCMatchColumnsConf{
     def print(){
         println("cassandraHost: " + host.get + ":" + port.get)
         println("table: " + keyspace.getOrElse("[not specified]") + ":" + tablename.getOrElse("[not specified]"))

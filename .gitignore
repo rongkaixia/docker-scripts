@@ -1,7 +1,7 @@
 # Ignore .DS_Store files on mac
 .DS_Store
 
-code/metastore_db/*
+code/mvn_project/my-app/metastore_db/*
 code/wind-data/*
 code/wind-data-all/*
 code/test_project/target/*
