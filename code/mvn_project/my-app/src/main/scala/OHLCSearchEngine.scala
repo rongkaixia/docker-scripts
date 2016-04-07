@@ -158,7 +158,18 @@ object Test{
     // run
     println("===================CALCULATing SIMILARITY====================")
     val result = engine.similarity(patternMatrix, samples)
-    println(result.size)
+    val top10Index = Array
+    .tabulate(result.length){ i => (result(i), i) }
+    .toSeq
+    .filter(!_._1.isNaN)
+    .sortBy(_._1)
+    .map(ele => ele._2)
+    .reverse
+    .take(10)
+
+    // result.foreach(println)
+    println("TOP 10 IS:")
+    top10Index.foreach(i => println("similiraty: " + result(i) +"\tsample: [" + samples(i).sid + "," + samples(i).beginTime + "," + samples(i).endTime + "]"))
     println("Done!")
     sc.stop()
   } 

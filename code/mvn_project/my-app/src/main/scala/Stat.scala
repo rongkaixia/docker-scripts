@@ -51,6 +51,7 @@ object Stat {
         val nA = normalization(A)
         val nB = normalization(B)
         brownianCov(nA,nB)/sqrt(brownianCov(nA,nA)*brownianCov(nB,nB))
+        // brownianCov(A,B)/sqrt(brownianCov(A,A)*brownianCov(B,B))
     }
 
 }
