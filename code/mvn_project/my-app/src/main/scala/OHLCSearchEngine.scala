@@ -117,24 +117,13 @@ class OHLCSearchEngine(
             .reduce((a,b) => a + "," + b) + 
             ")"
 
-        println(filterString)
-        val readConf = new com.datastax.spark.connector.rdd.ReadConf(Option[Int](5))
-        println("==========NUMBER OF TABLE PARTITIONS============")
-        println(_table.withReadConf(readConf).select(selectColumnsRef: _*).where(filterString).partitions.length)
-        println(_table.select(selectColumnsRef: _*).where(filterString).withReadConf(readConf).partitions.length)
-        
-        println("==========NUMBER OF splitCount============")
-        println(readConf.splitCount)
         val data = _table
             .withReadConf(readConf)
             .select(selectColumnsRef: _*)
             .where(filterString)
             .keyBy(row => row.getInt("sid"))
             .spanByKey
-
-        println("==========NUMBER OF PARTITIONS============")
-        println(data.partitions.length)
-
+            
         // construct broadcast variable
         val samplesWithIndex: Map[SamplePeriod, Int] = Array.tabulate(samples.length){ i => (samples(i), i) }.toMap
         val broadcastVar = _sc.broadcast(samplesWithIndex)
