@@ -47,6 +47,14 @@ CREATE TABLE DayMarketData100 (
   PRIMARY KEY (sid, datetime, exchangeCD)
 );
 
+CREATE TABLE DayMarketQuery10 (
+    sid int,
+    begintime timestamp,
+    endtime timestamp,
+    period int,
+    PRIMARY KEY (sid, begintime, endtime)
+);
+
 CREATE TABLE DayMarketQuery11 (
     sid int,
     begintime timestamp,
@@ -58,4 +66,5 @@ CREATE TABLE DayMarketQuery11 (
 /* COPY DayMarketData from '../cassandra-data/daymarketdata'; */
 COPY DayMarketData10 from '../cassandra-data/daymarketdata10';
 COPY DayMarketData100 from '../cassandra-data/daymarketdata100';
-COPY DayMarketQuery11 from '../cassandra-data/daymarketquery11-100';
+COPY DayMarketQuery10 from '../cassandra-data/daymarketquery10';
+COPY DayMarketQuery11 from '../cassandra-data/daymarketquery11';

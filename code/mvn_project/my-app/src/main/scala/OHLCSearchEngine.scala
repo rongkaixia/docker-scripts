@@ -4,13 +4,14 @@ package com.keystone.OHLCSearchEngine
 import scala.math.random
 import scala.reflect.ClassTag
 import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import org.apache.spark._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.cassandra._
 
-import com.datastax.driver.core.ResultSet
 import com.datastax.spark.connector._
+import com.datastax.driver.core.{ResultSet, BoundStatement, Row}
 
 import com.keystone.cassandra.CassandraClient
 import com.keystone.OHLCSearchEngine.{OHLCSearchEngineConf,Stat}
@@ -22,6 +23,16 @@ import breeze.stats.{mean, stddev}
 
 object Utils{
     def seqCassandraRow2DoubleDenseMatrix(data: Seq[CassandraRow], columns: List[String]): DenseMatrix[Double] = {
+        val nRows = data.size
+        val nCols = columns.size
+        val arrayData = data
+        .map( row => { columns.map(col => row.getDouble(col)) })
+        .flatten
+        .toArray
+        new DenseMatrix[Double](nCols, nRows, arrayData).t
+    }
+
+    def listDatastaxRow2DoubleDenseMatrix(data: List[Row], columns: List[String]): DenseMatrix[Double] = {
         val nRows = data.size
         val nCols = columns.size
         val arrayData = data
@@ -50,6 +61,49 @@ class OHLCSearchEngine(
     private val _table = sc.cassandraTable(_conf.getKeyspace, _conf.getTablename)
 
     def similarity(pattern: DenseMatrix[Double], samples: List[SamplePeriod]): List[Double] = {
+        val matchColumns = _conf.getMatchColumns
+        val host = _conf.getHost
+        val port = _conf.getPort
+
+        // 构造query string，取K线相关的区间
+        val queryString = "SELECT " + 
+        matchColumns.reduce((a,b) => a + "," + b) + 
+        " FROM " +
+        _conf.getKeyspace + "." + _conf.getTablename +
+        " WHERE " +
+        _conf.getSidColumn + " = ? " +
+        " AND " +
+        _conf.getDateColumn + " >= ? " +
+        " AND " +
+        _conf.getDateColumn + " <= ? "
+
+        // construct broadcast variable
+        val broadcastPattern = _sc.broadcast(pattern)
+        val broadcastQueryString = _sc.broadcast(queryString)
+
+        // worker function
+        val workerFunc: (Iterator[SamplePeriod]) => Iterator[Double] =
+            (samplesPart: Iterator[SamplePeriod]) => {
+                val client = new CassandraClient
+                client.connect(host, port)
+                val statement = client.getSession().prepare(broadcastQueryString.value)
+
+                samplesPart.map( sample => {
+                    val boundStatement = new BoundStatement(statement)
+                    .setInt(0, sample.sid)    
+                    .setTimestamp(1, sample.beginTime)
+                    .setTimestamp(2, sample.endTime)
+                    val matrix = Utils.listDatastaxRow2DoubleDenseMatrix(
+                        client.getSession().execute(boundStatement).all.asScala.toList, 
+                        matchColumns)
+                    Stat.brownianCorrelation(broadcastPattern.value, matrix)
+                })
+            }
+
+        _sc.parallelize(samples).mapPartitions(workerFunc, true).collect.toList
+    }
+
+    def similarityOld(pattern: DenseMatrix[Double], samples: List[SamplePeriod]): List[Double] = {
         // filter data and group sid
         val matchColumns = _conf.getMatchColumns
         val selectColumns = _conf.getDateColumn :: (_conf.getSidColumn :: _conf.getMatchColumns)
@@ -62,11 +116,24 @@ class OHLCSearchEngine(
             .map(ele => ele.toString)
             .reduce((a,b) => a + "," + b) + 
             ")"
+
+        println(filterString)
+        val readConf = new com.datastax.spark.connector.rdd.ReadConf(Option[Int](5))
+        println("==========NUMBER OF TABLE PARTITIONS============")
+        println(_table.withReadConf(readConf).select(selectColumnsRef: _*).where(filterString).partitions.length)
+        println(_table.select(selectColumnsRef: _*).where(filterString).withReadConf(readConf).partitions.length)
+        
+        println("==========NUMBER OF splitCount============")
+        println(readConf.splitCount)
         val data = _table
+            .withReadConf(readConf)
             .select(selectColumnsRef: _*)
             .where(filterString)
             .keyBy(row => row.getInt("sid"))
             .spanByKey
+
+        println("==========NUMBER OF PARTITIONS============")
+        println(data.partitions.length)
 
         // construct broadcast variable
         val samplesWithIndex: Map[SamplePeriod, Int] = Array.tabulate(samples.length){ i => (samples(i), i) }.toMap
@@ -112,9 +179,9 @@ object Test{
 
     // initilize sc
     val sparkConf = new SparkConf(true)
-    .setAppName("test cassandra")
     .set("spark.cassandra.connection.timeout_ms", "600000")
     .set("spark.cassandra.read.timeout_ms", "600000")
+    .set("spark.cassandra.input.split.size_in_mb", "1")
     val sc = new SparkContext(sparkConf)
 
     // initilize engine
@@ -127,10 +194,13 @@ object Test{
     .setTable(table)
     val engine = new OHLCSearchEngine(sc, conf)
 
+    // var rdd = sc.parallelize(0 to 1000000, 20)
+    // rdd.map(ele => ele * 10).collect
+    
     // =======构造pattern跟sample数据用于测试================
     val cc = new CassandraSQLContext(sc)
     val period = 10
-    val rddRows = cc.sql("SELECT * from chinamarket.daymarketquery11 limit 10000")
+    val rddRows = cc.sql("SELECT * from chinamarket.daymarketquery10 limit 10000")
     var tmp = rddRows
     .collect
     .map(row => {
@@ -171,6 +241,7 @@ object Test{
     println("TOP 10 IS:")
     top10Index.foreach(i => println("similiraty: " + result(i) +"\tsample: [" + samples(i).sid + "," + samples(i).beginTime + "," + samples(i).endTime + "]"))
     println("Done!")
+    
     sc.stop()
   } 
 }

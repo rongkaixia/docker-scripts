@@ -28,31 +28,28 @@ object Timer{
 /** Computes an approximation to pi */
 object TestCassandra{
   def main(args: Array[String]) {
-    val c = new OHLCSearchEngineConf()
-    c.print
-    // var t: String =  c.getSidColumn
-    var t = c.getSidColumn :: List("11")
-    println(t)
-    /*
-    var cassandraHost = "172.17.0.1"
+    
+    var cassandraHost = "172.17.0.3"
     var cassandraPort = 9042
     var client = new CassandraClient
     var tmp = Timer.time{
         println("================connecting Cassandra==============")
         client.connect(cassandraHost, cassandraPort)   
     }
-    var sampleIndex = client.execute("SELECT * from chinamarket.daymarketquery100 limit " + args(0))
+    var sampleIndex = client.execute("SELECT * from chinamarket.daymarketquery10 limit " + args(0))
     val listRows = sampleIndex.all.toList
     // var dt = DateTime.parse("1996-04-09")
-    var statement = client.getSession().prepare("SELECT open, high, low, close FROM chinamarket.daymarketdata where sid = ? and datetime > ? LIMIT 10")
+    
+    val queryString = "SELECT open, high, low, close FROM chinamarket.daymarketdata100 where sid = ? " + "and datetime >= ? " + "and datetime <= ? "
+    var statement = client.getSession().prepare(queryString)
     var result = Timer.time{
         println("==============start query==========")
         // var count = 1
         listRows.map( row => {
             // println("quering " + count)
             // count += 1
-            var boundStatement = new BoundStatement(statement).setInt(0, row.getInt("sid")).setTimestamp(1, row.getTimestamp("datetime"))
-            var data = client.getSession().execute(boundStatement)
+            var boundStatement = new BoundStatement(statement).setInt(0, row.getInt("sid")).setTimestamp(1, row.getTimestamp("begintime")).setTimestamp(2, row.getTimestamp("endtime"))
+            var data = client.getSession().execute(boundStatement).all
             // var queryMatrix = Utils.cassandraResultSet2DoubleDenseMatrix(data)
             // var sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
             // var queryString = "SELECT datetime,open, high, low, close FROM chinamarket.daymarketdata where sid = " + row.getInt("sid") + " AND datetime > '" + sdf.format(row.getTimestamp("datetime")) + "' LIMIT 10"
@@ -64,7 +61,7 @@ object TestCassandra{
         // var queryMatrix = Utils.cassandraResultSet2DoubleDenseMatrix(data)
         // println(queryMatrix)
     }
-    */
+
   }
 }
 // scalastyle:on println

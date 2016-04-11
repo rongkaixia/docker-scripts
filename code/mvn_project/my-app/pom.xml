@@ -53,12 +53,6 @@
           <!-- <scope>provided</scope> -->
       </dependency>
       <dependency>
-          <groupId>com.websudos</groupId>
-          <artifactId>phantom_2.10</artifactId>
-          <version>1.22.0</version>
-          <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>com.datastax.cassandra</groupId>
         <artifactId>cassandra-driver-core</artifactId>
         <version>3.0.0</version>

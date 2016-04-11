@@ -1,10 +1,13 @@
 package com.keystone.cassandra;
 
+import java.io.Serializable;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.policies.*;
-public class CassandraClient {
+
+//TODO: 优化配置，增加读性能
+public class CassandraClient implements Serializable{
    private Cluster cluster;
    private Session session;
 
