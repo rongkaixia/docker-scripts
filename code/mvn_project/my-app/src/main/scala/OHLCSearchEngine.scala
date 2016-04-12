@@ -118,12 +118,11 @@ class OHLCSearchEngine(
             ")"
 
         val data = _table
-            .withReadConf(readConf)
             .select(selectColumnsRef: _*)
             .where(filterString)
             .keyBy(row => row.getInt("sid"))
             .spanByKey
-            
+
         // construct broadcast variable
         val samplesWithIndex: Map[SamplePeriod, Int] = Array.tabulate(samples.length){ i => (samples(i), i) }.toMap
         val broadcastVar = _sc.broadcast(samplesWithIndex)
