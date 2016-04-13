@@ -3,13 +3,13 @@
 DEBUG=1
 BASEDIR=$(cd $(dirname $0); pwd)
 
-spark_images=( "spark:1.6.1" "amplab/spark:0.9.0" "amplab/spark:0.9.1" "amplab/spark:1.0.0")
+spark_images=( "spark:latest" "amplab/spark:0.9.0" "amplab/spark:0.9.1" "amplab/spark:1.0.0")
 cassandra_images=( "cassandra:2.2" )
 shark_images=( "amplab/shark:0.8.0" )
 NAMESERVER_IMAGE="dnsmasq-precise"
 
 start_shell=0
-VOLUME_MAP=""
+VOLUME_MAP="/home/vagrant/docker-scripts/rk_deploy/spark_config"
 
 image_type="?"
 image_version="?"

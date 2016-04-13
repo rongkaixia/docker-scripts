@@ -1,5 +1,5 @@
 # Spark
-FROM spark-base:1.6.1
+FROM spark-base
 MAINTAINER keystone rongkaixia@gmail.com
 
 # Instead of using a random port, bind the worker to a specific port

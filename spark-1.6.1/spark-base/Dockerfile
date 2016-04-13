@@ -22,4 +22,4 @@ RUN (cd / && gunzip < spark-$SPARK_VERSION-bin-hadoop1.tgz)|(cd /opt && tar -xvf
 RUN (ln -s /opt/spark-$SPARK_VERSION-bin-hadoop1 /opt/spark-$SPARK_VERSION && rm /spark-$SPARK_VERSION-bin-hadoop1.tgz)
 
 # Add Shark config files and configure script
-ADD files /root/spark_files
+# ADD files /root/spark_files

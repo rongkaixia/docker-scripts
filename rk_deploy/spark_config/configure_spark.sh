@@ -20,9 +20,9 @@ function create_spark_directories() {
 
 function deploy_spark_files() {
     deploy_hadoop_files
-    cp /root/spark_files/spark-env.sh /opt/spark-$SPARK_VERSION/conf/
-    cp /root/spark_files/log4j.properties /opt/spark-$SPARK_VERSION/conf/
-    cp /root/spark_files/spark-defaults.conf /opt/spark-$SPARK_VERSION/conf/
+    cp $1/spark-env.sh /opt/spark-$SPARK_VERSION/conf/
+    cp $1/log4j.properties /opt/spark-$SPARK_VERSION/conf/
+    cp $1/spark-defaults.conf /opt/spark-$SPARK_VERSION/conf/
 }		
 
 function configure_spark() {
@@ -31,11 +31,11 @@ function configure_spark() {
     sed -i s/__MASTER__/master/ /opt/spark-$SPARK_VERSION/conf/spark-defaults.conf
     sed -i s/__MASTER__/master/ /opt/spark-$SPARK_VERSION/conf/spark-env.sh
     sed -i s/__SPARK_HOME__/"\/opt\/spark-${SPARK_VERSION}"/ /opt/spark-$SPARK_VERSION/conf/spark-env.sh
-    sed -i s/__JAVA_HOME__/"\/usr\/lib\/jvm\/java-7-openjdk-amd64"/ /opt/spark-$SPARK_VERSION/conf/spark-env.sh
+    sed -i s/__JAVA_HOME__/"\/usr\/lib\/jvm\/java-8-openjdk-amd64"/ /opt/spark-$SPARK_VERSION/conf/spark-env.sh
 }
 
 function prepare_spark() {
     create_spark_directories
-    deploy_spark_files
+    deploy_spark_files $2
     configure_spark $1
 }

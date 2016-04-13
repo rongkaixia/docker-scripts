@@ -5,22 +5,6 @@ MASTER_IP=
 NUM_REGISTERED_WORKERS=0
 SPARK_VERSION=1.6.1
 
-function build_spark_master_image() {
-    echo "building spark master image"
-    cd ../spark-$SPARK_VERSION/spark-master
-    . build
-    cd -
-    echo "build spark master image success"
-}
-
-function build_spark_worker_image() {
-    echo "building spark worker image"
-    cd ../spark-$SPARK_VERSION/spark-worker
-    . build
-    cd -
-    echo "build spark worker image success"
-}
-
 # starts the Spark/Shark master container
 function start_master() {
     echo "starting master container"
@@ -106,7 +90,7 @@ function wait_for_master {
     elif [[ "$SPARK_VERSION" == "1.6.1" ]]; then
         query_string="MasterWebUI: Started MasterWebUI"
     else
-        query_string="MasterWebUI: Started Master web UI"
+        query_string="MasterWebUI: Started MasterWebUI"
     fi
     echo -n "waiting for master "
     sudo docker logs $MASTER | grep "$query_string" > /dev/null
