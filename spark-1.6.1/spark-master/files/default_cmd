@@ -11,12 +11,16 @@ echo "preparing Spark"
 prepare_spark $IP /data
 
 echo "starting Hadoop Namenode"
-sudo -u hdfs hadoop namenode -format > /dev/null 2>&1
-service hadoop-namenode start > /dev/null 2>&1
+# sudo -u hdfs hadoop namenode -format > /dev/null 2>&1
+# service hadoop-namenode start > /dev/null 2>&1
+sudo -u hdfs hdfs namenode -format > /dev/null 2>&1
+sudo -u hdfs hadoop-daemon.sh start namenode > /dev/null 2>&1
 
 echo "creating history directory"
-sudo -u hdfs hadoop dfsadmin -safemode wait > /dev/null 2>&1
-sudo -u hdfs hadoop fs -mkdir hdfs://$IP:9000/user/hdfs/spark-events > /dev/null 2>&1
+# sudo -u hdfs hadoop dfsadmin -safemode wait > /dev/null 2>&1
+# sudo -u hdfs hadoop fs -mkdir hdfs://$IP:9000/user/hdfs/spark-events > /dev/null 2>&1
+sudo -u hdfs hdfs dfsadmin -safemode wait > /dev/null 2>&1
+sudo -u hdfs hdfs dfs -mkdir -p hdfs://$IP:9000/user/hdfs/spark-events > /dev/null 2>&1
 
 echo "starting sshd"
 /usr/sbin/sshd

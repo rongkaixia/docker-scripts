@@ -9,7 +9,8 @@ echo "preparing Spark"
 prepare_spark $1 /data
 
 echo "starting Hadoop Datanode"
-service hadoop-datanode start
+# service hadoop-datanode start
+sudo -u hdfs hadoop-daemon.sh start datanode > /dev/null 2>&1
 
 echo "starting sshd"
 /usr/sbin/sshd
