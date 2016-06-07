@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 export SCALA_HOME=/opt/scala-2.10.3
 export SPARK_HOME=__SPARK_HOME__
-export SPARK_WORKER_CORES=2
-export SPARK_MEM=4000m
-export SPARK_WORKER_MEMORY=2000m
-export SPARK_MASTER_MEM=2000m
+export SPARK_WORKER_CORES=4
+export SPARK_MEM=5000m
+export SPARK_WORKER_MEMORY=3000m
+export SPARK_MASTER_MEM=1000m
 export SPARK_MASTER_IP=__MASTER__
 export HADOOP_HOME="/etc/hadoop"
 export MASTER="spark://__MASTER__:7077"

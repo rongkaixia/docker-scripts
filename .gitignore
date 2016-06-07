@@ -1,6 +1,8 @@
 # Ignore .DS_Store files on mac
 .DS_Store
 
+apache-ignite-fabric-1.6.0-bin/*
+apache-hadoop-hdfs-precise/*
 code/mvn_project/my-app/metastore_db/*
 code/wind-data/*
 code/wind-data-all/*

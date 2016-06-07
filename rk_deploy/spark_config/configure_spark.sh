@@ -23,6 +23,7 @@ function deploy_spark_files() {
     cp $1/spark-env.sh /opt/spark-$SPARK_VERSION/conf/
     cp $1/log4j.properties /opt/spark-$SPARK_VERSION/conf/
     cp $1/spark-defaults.conf /opt/spark-$SPARK_VERSION/conf/
+    cp $1/metrics.properties /opt/spark-$SPARK_VERSION/conf/
 }		
 
 function configure_spark() {

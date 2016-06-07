@@ -119,8 +119,8 @@ start_nameserver $NAMESERVER_IMAGE
 wait_for_nameserver
 
 # start cassandra
-start_cassandra $CASSANDRA_IMAGE $CASSANDRA_VERSION
-wait_for_cassandra
+# start_cassandra $CASSANDRA_IMAGE $CASSANDRA_VERSION
+# wait_for_cassandra
 
 # start spark master
 # build_spark_master_image
