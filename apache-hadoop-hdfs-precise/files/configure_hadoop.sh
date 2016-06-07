@@ -13,7 +13,7 @@ function deploy_hadoop_files() {
     for i in "${hadoop_files[@]}";
     do
         filename=$(basename $i);
-        cp $i /etc/hadoop/$filename;
+        cp $i $HADOOP_HOME/etc/hadoop/$filename;
     done
     cp /root/hadoop_files/id_rsa /root/.ssh
     chmod go-rwx /root/.ssh/id_rsa
@@ -22,8 +22,8 @@ function deploy_hadoop_files() {
 }		
 
 function configure_hadoop() {
-    sed -i s/__MASTER__/$1/ /etc/hadoop/core-site.xml
-    sed -i s/"JAVA_HOME=\/usr\/lib\/jvm\/java-6-sun"/"JAVA_HOME=\/usr\/lib\/jvm\/java-7-openjdk-amd64"/ /etc/hadoop/hadoop-env.sh
+    sed -i s/__MASTER__/$1/ $HADOOP_HOME/etc/hadoop/core-site.xml
+    # sed -i s/"JAVA_HOME=\/usr\/lib\/jvm\/java-6-sun"/"JAVA_HOME=\/usr\/lib\/jvm\/java-7-openjdk-amd64"/ /etc/hadoop/hadoop-env.sh
 }
 
 function prepare_hadoop() {
